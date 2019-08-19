@@ -1,4 +1,10 @@
-# P3 Programming Bootcamp 2019: Data Applications 1
+---
+title: "Predictive Plant Phenomics Programming Bootcamp 2019: Applications 2"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
 
 Materials for the programming bootcamp hosted by the [Predictive Plant Phenomics (P3) NRT program][p3-landing] on August 16, 2019. This workshop is a demonstration of 
 
@@ -6,6 +12,7 @@ Materials for the programming bootcamp hosted by the [Predictive Plant Phenomics
 * [August 14: *Introduction to Python*][intro-to-python] taught by [Paul Villanueva][paul-github]
 * [August 15: *Introduction to UNIX*][intro-to-unix] taught by [Shane Dooley][shane-github]
 * [August 16: *Data Applications 1*][data-1] taught by [Paul Villanueva][paul-github]
+* [August 18: *Data Applications 2*][data-2] taught by [Paul Villanueva][paul-github] 
 
 ## About these workshops
 
@@ -34,3 +41,4 @@ Send questions, comments, and feedback to pev at iastate dot edu.
 [intro-to-unix]: https://github.com/skDooley/shell_tutorial
 [shane-github]: https://github.com/skDooley
 [data-1]: https://github.com/pommevilla/p3.bootcamp.da1.2019
+[data-2]: https://github.com/pommevilla/p3.bootcamp.da2.2019

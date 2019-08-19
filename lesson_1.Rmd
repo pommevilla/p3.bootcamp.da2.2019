@@ -1,0 +1,223 @@
+---
+title: "Network analaysis basics with iGraph"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Network analysis allows us to take a qualitative look at a system 
+
+Network analysis is the study of interactions within a system. A network, or graph, is comprised of *nodes*, the objects of study, and *edges*, the interactions betwee nodes.
+
+## iGraph basics
+
+We're going to start learning about network theory with the [Zachary's Karate Club](https://en.wikipedia.org/wiki/Zachary%27s_karate_club) dataset:
+
+```{r, load_packages.1}
+library(igraph)
+library(igraphdata)
+library(tidyverse)
+data(karate)
+
+theme_set(theme_light())
+```
+
+(Note: you can reproduce Zachary's Karate network with `igraph::make_graph("Zachary")`, but it doesn't have as much metadata as the version that comes with `igraphdata`)
+
+Let's do some basic igraph stuff. Let's see what an `igraph` object looks like:
+
+```{r, karate.1}
+karate
+```
+
+There's a lot of information here, but let's focus on the `attr` line. This tells us the following things:
+
+* `name (g/c)` is an attribute of the graph itself, stored as characters. The same applies for `Citation` and `Author`.
+* `Faction (v/n)` tells us that the vertices have a numeric attribute corresponding to the faction the vertex belongs to. Similarly, vertices have names, labels, and colors.
+* `weight (e/n)` tells us that the edges have a number assigned to them according to some weight.
+
+Let's start examining more attributes of the graph. We can get the *order* of the graph, which tells us the number of vertices it has:
+
+```{r, karate.2}
+gorder(karate)
+```
+
+Similarly, the *size* of the graph tells us how many edges there are:
+
+```{r, karate.3}
+gsize(karate)
+```
+
+
+Let's type in We can get a list of the nodes in the graph by doing the following:
+
+```{r, karate.4}
+V(karate)
+```
+
+We can access individual vertices by index...
+
+```{r, karate.5}
+V(karate)[1:5]
+```
+
+...or by name.
+
+```{r, karate.6}
+V(karate)["Mr Hi"]
+```
+
+We can also access multiple vertices at once by name:
+
+```{r, karate.7}
+V(karate)[c("Mr Hi", "John A", "Actor 7")]
+```
+
+
+We can see a list of the attributes of each vertex with `vertex.attributes`...
+
+```{r, karate.8a}
+vertex.attributes(karate)
+```
+
+...and we can access that attribute from a particular node by doing using `$`:
+
+```{r, karate.8}
+V(karate)[34]$name
+```
+
+We can access edges in a similar way:
+
+```{r, karate.9}
+E(karate)
+```
+
+And to find edge attributes:
+
+```{r,karate.10}
+edge.attributes(karate)
+```
+
+We can do a basic visualization:
+
+```{r, karate.11}
+plot.igraph(karate,
+     main = "Zachary's Karate Network")
+```
+
+Finally, we can try out other layouts:
+
+```{r, karate.12}
+plot(karate, 
+     layout = layout_as_tree(karate))
+```
+
+
+### Exercise 1.1
+
+* What do the nodes represent?
+* What do the edges represent? How are they weighted?
+* What's the difference between a directed and an undirected graph? What kind of graph is `karate`?
+* Enter `karate[]` into your console. What is that?
+* Plot `karate` again using `layout_in_circle`.
+
+## Graph connectivity
+
+A common question in network analysis is to figure out how the degrees in a graph are distributed. We say two nodes are *connected* if there is an edge between them - that is, if the two objects represented by the nodes interact with each other. We define the *degree* of a node as the number of other nodes that the graph is connected it. We can look at the degrees of each node in the graph using `degree`:
+
+```{r, karate.13}
+degree(karate)
+```
+
+There are a few ways we can access the highest degree nodes. If we just want the single highest node, we can do:
+
+```{r, karate.14}
+which.max(degree(karate))
+```
+
+If we wanted, say, the 5 highest nodes, we can do:
+
+```{r, karate.15}
+sort(degree(karate)) %>% 
+  tail(5)
+```
+
+Suppose we wanted all those nodes with degree higher than 4. We can than do:
+
+```{r, karate.16}
+degree(karate)[degree(karate) > 4]
+```
+
+`iGraph` has a `degree.distribution` function that returns the proportion of nodes of each degree. 
+
+```{r, karate.17}
+degree.distribution(karate)
+```
+
+
+We can get a quick visualization of this distribution via `plot`:
+
+```{r, karate.18}
+plot(degree.distribution(karate))
+```
+
+We will use the following function throughout the day to help make the visualizations a little prettier. Run the following code in your environment:
+
+```{r, karate.19}
+plot.dd <- function(g){
+  g.dd <- data.frame(0:(length(degree_distribution(g)) - 1), 
+                     degree_distribution(g, cumulative = FALSE))
+  colnames(g.dd) <- c("k", "p_k")
+  ggplot(g.dd, aes(x = k, y = p_k)) + geom_bar(stat = "identity") +
+    labs(x = "Degree (k)", y = "Proportion of nodes of degree k (p(k))", title = "Degree distribution: k vs. p(k)", 
+         subtitle = paste("Graph:", deparse(substitute(g)))) +
+    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+    scale_x_continuous(breaks = c(0:length(degree_distribution(g)))
+                                              ) 
+}
+
+```
+
+Then you can call the function whenever by doing this:
+
+```{r, karate.20}
+plot.dd(karate)
+```
+
+The *neighborhood* of a node is the set of nodes that are connected to it. For instance, to see the neighborhood of `Mr Hi`, we can do:
+
+```{r, karate.21}
+neighbors(karate, "Actor 7")
+```
+
+
+### Exercise 1.2
+
+* The general intuition is that those nodes that have a higher degree are more important than those nodes with a lower degree connectivity. 
+* Refer back to the plot of the degree distribution of the network. There are two clear outliers in terms of degree connectivity. Who are they? Does this make sense?
+* Find the neighborhoods of the nodes with the highest degree. Use `intersect` to find the overlap between these two neighborhoods. What did you find? Does this make sense? What are some questions you may have about this overlap?
+* For the `karate` network, it is easy to pick out those nodes that have a "high" degree connectivity. However, suppose that your degree distribution looked like the graph below. How would you decide a cutoff for a node to have "high" degree connectivity?
+
+```{r, karate.22, echo = FALSE}
+sim_graph <- erdos.renyi.game(50, 1/5)
+plot.dd(sim_graph)
+```
+
+## Graph clustering
+
+Another common technique in network analysis is *graph clustering*. The aim of *graph clustering* is to find subsets of nodes within a graph that are related. *`iGraph` comes with several clustering algorithms. For example, we can use `cluster_fast_greedy` to cluster the `karate` network:
+
+```{r, karate.23}
+karate.cfg <- cluster_fast_greedy(karate)
+plot(karate.cfg,
+     karate)
+```
+
+### Exercise 1.3
+
+* How do you interpret the previous plot? Does this make sense given the system of study?
+* Try out other clustering algorithms and see if you can get equal or better results as above.
+* It's easy to find an algorithm and apply it to your network to try and find some structure. What are some things you should keep in mind when applying clustering algorithms to a nentwork?
+

@@ -1,0 +1,26 @@
+name: Practice repo
+output_dir: docs
+navbar:
+  title: ''
+  left:
+  - text: About
+    href: index.html
+  - text: Introduction
+    href: introduction.html
+  - text: iGraph Basics
+    href: lesson_1.html
+  - text: PPI network of Saccharomyces
+    href: lesson_2.html
+
+    
+output:
+  html_document:
+    theme: lumen
+    include:
+      after_body: src/footer.html
+    lib_dir: site_libs
+    toc: yes
+    toc_float:
+      smooth_scroll: yes
+      collapsed: no
+    self_contained: no

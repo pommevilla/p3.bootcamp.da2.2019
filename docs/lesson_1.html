@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Network analaysis basics with iGraph</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 54px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h2 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h3 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h4 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h5 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h6 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">About</a>
+</li>
+<li>
+  <a href="introduction.html">Introduction</a>
+</li>
+<li>
+  <a href="lesson_1.html">iGraph Basics</a>
+</li>
+<li>
+  <a href="lesson_2.html">PPI network of Saccharomyces</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Network analaysis basics with iGraph</h1>
+
+</div>
+
+
+<p>Network analysis allows us to take a qualitative look at a system</p>
+<p>Network analysis is the study of interactions within a system. A network, or graph, is comprised of <em>nodes</em>, the objects of study, and <em>edges</em>, the interactions betwee nodes.</p>
+<div id="igraph-basics" class="section level2">
+<h2>iGraph basics</h2>
+<p>We’re going to start learning about network theory with the <a href="https://en.wikipedia.org/wiki/Zachary%27s_karate_club">Zachary’s Karate Club</a> dataset:</p>
+<pre class="r"><code>library(igraph)
+library(igraphdata)
+library(tidyverse)
+data(karate)
+
+theme_set(theme_light())</code></pre>
+<p>(Note: you can reproduce Zachary’s Karate network with <code>igraph::make_graph("Zachary")</code>, but it doesn’t have as much metadata as the version that comes with <code>igraphdata</code>)</p>
+<p>Let’s do some basic igraph stuff. Let’s see what an <code>igraph</code> object looks like:</p>
+<pre class="r"><code>karate</code></pre>
+<pre><code>## IGRAPH 4b458a1 UNW- 34 78 -- Zachary&#39;s karate club network
+## + attr: name (g/c), Citation (g/c), Author (g/c), Faction (v/n),
+## | name (v/c), label (v/c), color (v/n), weight (e/n)
+## + edges from 4b458a1 (vertex names):
+##  [1] Mr Hi  --Actor 2  Mr Hi  --Actor 3  Mr Hi  --Actor 4 
+##  [4] Mr Hi  --Actor 5  Mr Hi  --Actor 6  Mr Hi  --Actor 7 
+##  [7] Mr Hi  --Actor 8  Mr Hi  --Actor 9  Mr Hi  --Actor 11
+## [10] Mr Hi  --Actor 12 Mr Hi  --Actor 13 Mr Hi  --Actor 14
+## [13] Mr Hi  --Actor 18 Mr Hi  --Actor 20 Mr Hi  --Actor 22
+## [16] Mr Hi  --Actor 32 Actor 2--Actor 3  Actor 2--Actor 4 
+## [19] Actor 2--Actor 8  Actor 2--Actor 14 Actor 2--Actor 18
+## + ... omitted several edges</code></pre>
+<p>There’s a lot of information here, but let’s focus on the <code>attr</code> line. This tells us the following things:</p>
+<ul>
+<li><code>name (g/c)</code> is an attribute of the graph itself, stored as characters. The same applies for <code>Citation</code> and <code>Author</code>.</li>
+<li><code>Faction (v/n)</code> tells us that the vertices have a numeric attribute corresponding to the faction the vertex belongs to. Similarly, vertices have names, labels, and colors.</li>
+<li><code>weight (e/n)</code> tells us that the edges have a number assigned to them according to some weight.</li>
+</ul>
+<p>Let’s start examining more attributes of the graph. We can get the <em>order</em> of the graph, which tells us the number of vertices it has:</p>
+<pre class="r"><code>gorder(karate)</code></pre>
+<pre><code>## [1] 34</code></pre>
+<p>Similarly, the <em>size</em> of the graph tells us how many edges there are:</p>
+<pre class="r"><code>gsize(karate)</code></pre>
+<pre><code>## [1] 78</code></pre>
+<p>Let’s type in We can get a list of the nodes in the graph by doing the following:</p>
+<pre class="r"><code>V(karate)</code></pre>
+<pre><code>## + 34/34 vertices, named, from 4b458a1:
+##  [1] Mr Hi    Actor 2  Actor 3  Actor 4  Actor 5  Actor 6  Actor 7 
+##  [8] Actor 8  Actor 9  Actor 10 Actor 11 Actor 12 Actor 13 Actor 14
+## [15] Actor 15 Actor 16 Actor 17 Actor 18 Actor 19 Actor 20 Actor 21
+## [22] Actor 22 Actor 23 Actor 24 Actor 25 Actor 26 Actor 27 Actor 28
+## [29] Actor 29 Actor 30 Actor 31 Actor 32 Actor 33 John A</code></pre>
+<p>We can access individual vertices by index…</p>
+<pre class="r"><code>V(karate)[1:5]</code></pre>
+<pre><code>## + 5/34 vertices, named, from 4b458a1:
+## [1] Mr Hi   Actor 2 Actor 3 Actor 4 Actor 5</code></pre>
+<p>…or by name.</p>
+<pre class="r"><code>V(karate)[&quot;Mr Hi&quot;]</code></pre>
+<pre><code>## + 1/34 vertex, named, from 4b458a1:
+## [1] Mr Hi</code></pre>
+<p>We can also access multiple vertices at once by name:</p>
+<pre class="r"><code>V(karate)[c(&quot;Mr Hi&quot;, &quot;John A&quot;, &quot;Actor 7&quot;)]</code></pre>
+<pre><code>## + 3/34 vertices, named, from 4b458a1:
+## [1] Mr Hi   John A  Actor 7</code></pre>
+<p>We can see a list of the attributes of each vertex with <code>vertex.attributes</code>…</p>
+<pre class="r"><code>vertex.attributes(karate)</code></pre>
+<pre><code>## $Faction
+##  [1] 1 1 1 1 1 1 1 1 2 2 1 1 1 1 2 2 1 1 2 1 2 1 2 2 2 2 2 2 2 2 2 2 2 2
+## 
+## $name
+##  [1] &quot;Mr Hi&quot;    &quot;Actor 2&quot;  &quot;Actor 3&quot;  &quot;Actor 4&quot;  &quot;Actor 5&quot;  &quot;Actor 6&quot; 
+##  [7] &quot;Actor 7&quot;  &quot;Actor 8&quot;  &quot;Actor 9&quot;  &quot;Actor 10&quot; &quot;Actor 11&quot; &quot;Actor 12&quot;
+## [13] &quot;Actor 13&quot; &quot;Actor 14&quot; &quot;Actor 15&quot; &quot;Actor 16&quot; &quot;Actor 17&quot; &quot;Actor 18&quot;
+## [19] &quot;Actor 19&quot; &quot;Actor 20&quot; &quot;Actor 21&quot; &quot;Actor 22&quot; &quot;Actor 23&quot; &quot;Actor 24&quot;
+## [25] &quot;Actor 25&quot; &quot;Actor 26&quot; &quot;Actor 27&quot; &quot;Actor 28&quot; &quot;Actor 29&quot; &quot;Actor 30&quot;
+## [31] &quot;Actor 31&quot; &quot;Actor 32&quot; &quot;Actor 33&quot; &quot;John A&quot;  
+## 
+## $label
+##  [1] &quot;H&quot;  &quot;2&quot;  &quot;3&quot;  &quot;4&quot;  &quot;5&quot;  &quot;6&quot;  &quot;7&quot;  &quot;8&quot;  &quot;9&quot;  &quot;10&quot; &quot;11&quot; &quot;12&quot; &quot;13&quot; &quot;14&quot;
+## [15] &quot;15&quot; &quot;16&quot; &quot;17&quot; &quot;18&quot; &quot;19&quot; &quot;20&quot; &quot;21&quot; &quot;22&quot; &quot;23&quot; &quot;24&quot; &quot;25&quot; &quot;26&quot; &quot;27&quot; &quot;28&quot;
+## [29] &quot;29&quot; &quot;30&quot; &quot;31&quot; &quot;32&quot; &quot;33&quot; &quot;A&quot; 
+## 
+## $color
+##  [1] 1 1 1 1 1 1 1 1 2 2 1 1 1 1 2 2 1 1 2 1 2 1 2 2 2 2 2 2 2 2 2 2 2 2</code></pre>
+<p>…and we can access that attribute from a particular node by doing using <code>$</code>:</p>
+<pre class="r"><code>V(karate)[34]$name</code></pre>
+<pre><code>## [1] &quot;John A&quot;</code></pre>
+<p>We can access edges in a similar way:</p>
+<pre class="r"><code>E(karate)</code></pre>
+<pre><code>## + 78/78 edges from 4b458a1 (vertex names):
+##  [1] Mr Hi  --Actor 2  Mr Hi  --Actor 3  Mr Hi  --Actor 4 
+##  [4] Mr Hi  --Actor 5  Mr Hi  --Actor 6  Mr Hi  --Actor 7 
+##  [7] Mr Hi  --Actor 8  Mr Hi  --Actor 9  Mr Hi  --Actor 11
+## [10] Mr Hi  --Actor 12 Mr Hi  --Actor 13 Mr Hi  --Actor 14
+## [13] Mr Hi  --Actor 18 Mr Hi  --Actor 20 Mr Hi  --Actor 22
+## [16] Mr Hi  --Actor 32 Actor 2--Actor 3  Actor 2--Actor 4 
+## [19] Actor 2--Actor 8  Actor 2--Actor 14 Actor 2--Actor 18
+## [22] Actor 2--Actor 20 Actor 2--Actor 22 Actor 2--Actor 31
+## [25] Actor 3--Actor 4  Actor 3--Actor 8  Actor 3--Actor 9 
+## [28] Actor 3--Actor 10 Actor 3--Actor 14 Actor 3--Actor 28
+## + ... omitted several edges</code></pre>
+<p>And to find edge attributes:</p>
+<pre class="r"><code>edge.attributes(karate)</code></pre>
+<pre><code>## $weight
+##  [1] 4 5 3 3 3 3 2 2 2 3 1 3 2 2 2 2 6 3 4 5 1 2 2 2 3 4 5 1 3 2 2 2 3 3 3
+## [36] 2 3 5 3 3 3 3 3 4 2 3 3 2 3 4 1 2 1 3 1 2 3 5 4 3 5 4 2 3 2 7 4 2 4 2
+## [71] 2 4 2 3 3 4 4 5</code></pre>
+<p>We can do a basic visualization:</p>
+<pre class="r"><code>plot.igraph(karate,
+     main = &quot;Zachary&#39;s Karate Network&quot;)</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.11-1.png" width="672" /></p>
+<p>Finally, we can try out other layouts:</p>
+<pre class="r"><code>plot(karate, 
+     layout = layout_as_tree(karate))</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.12-1.png" width="672" /></p>
+<div id="exercise-1.1" class="section level3">
+<h3>Exercise 1.1</h3>
+<ul>
+<li>What do the nodes represent?</li>
+<li>What do the edges represent? How are they weighted?</li>
+<li>What’s the difference between a directed and an undirected graph? What kind of graph is <code>karate</code>?</li>
+<li>Enter <code>karate[]</code> into your console. What is that?</li>
+<li>Plot <code>karate</code> again usign <code>layout_in_circle</code>.</li>
+</ul>
+</div>
+</div>
+<div id="graph-connectivity" class="section level2">
+<h2>Graph connectivity</h2>
+<p>A common question in network analysis is to figure out how the degrees in a graph are distributed. We say two nodes are <em>connected</em> if there is an edge between them - that is, if the two objects represented by the nodes interact with each other. We define the <em>degree</em> of a node as the number of other nodes that the graph is connected it. We can look at the degrees of each node in the graph using <code>degree</code>:</p>
+<pre class="r"><code>degree(karate)</code></pre>
+<pre><code>##    Mr Hi  Actor 2  Actor 3  Actor 4  Actor 5  Actor 6  Actor 7  Actor 8 
+##       16        9       10        6        3        4        4        4 
+##  Actor 9 Actor 10 Actor 11 Actor 12 Actor 13 Actor 14 Actor 15 Actor 16 
+##        5        2        3        1        2        5        2        2 
+## Actor 17 Actor 18 Actor 19 Actor 20 Actor 21 Actor 22 Actor 23 Actor 24 
+##        2        2        2        3        2        2        2        5 
+## Actor 25 Actor 26 Actor 27 Actor 28 Actor 29 Actor 30 Actor 31 Actor 32 
+##        3        3        2        4        3        4        4        6 
+## Actor 33   John A 
+##       12       17</code></pre>
+<p>There are a few ways we can access the highest degree nodes. If we just want the single highest node, we can do:</p>
+<pre class="r"><code>which.max(degree(karate))</code></pre>
+<pre><code>## John A 
+##     34</code></pre>
+<p>If we wanted, say, the 5 highest nodes, we can do:</p>
+<pre class="r"><code>sort(degree(karate)) %&gt;% 
+  tail(5)</code></pre>
+<pre><code>##  Actor 2  Actor 3 Actor 33    Mr Hi   John A 
+##        9       10       12       16       17</code></pre>
+<p>Suppose we wanted all those nodes with degree higher than 4. We can than do:</p>
+<pre class="r"><code>degree(karate)[degree(karate) &gt; 4]</code></pre>
+<pre><code>##    Mr Hi  Actor 2  Actor 3  Actor 4  Actor 9 Actor 14 Actor 24 Actor 32 
+##       16        9       10        6        5        5        5        6 
+## Actor 33   John A 
+##       12       17</code></pre>
+<p><code>iGraph</code> has a <code>degree.distribution</code> function that returns the proportion of nodes of each degree.</p>
+<pre class="r"><code>degree.distribution(karate)</code></pre>
+<pre><code>##  [1] 0.00000000 0.02941176 0.32352941 0.17647059 0.17647059 0.08823529
+##  [7] 0.05882353 0.00000000 0.00000000 0.02941176 0.02941176 0.00000000
+## [13] 0.02941176 0.00000000 0.00000000 0.00000000 0.02941176 0.02941176</code></pre>
+<p>We can get a quick visualization of this distribution via <code>plot</code>:</p>
+<pre class="r"><code>plot(degree.distribution(karate))</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.18-1.png" width="672" /></p>
+<p>We will use the following function throughout the day to help make the visualizations a little prettier. Run the following code in your environment:</p>
+<pre class="r"><code>plot.dd &lt;- function(g){
+  g.dd &lt;- data.frame(0:(length(degree_distribution(g)) - 1), 
+                     degree_distribution(g, cumulative = FALSE))
+  colnames(g.dd) &lt;- c(&quot;k&quot;, &quot;p_k&quot;)
+  ggplot(g.dd, aes(x = k, y = p_k)) + geom_bar(stat = &quot;identity&quot;) +
+    labs(x = &quot;Degree (k)&quot;, y = &quot;Proportion of nodes of degree k (p(k))&quot;, title = &quot;Degree distribution: k vs. p(k)&quot;, 
+         subtitle = paste(&quot;Graph:&quot;, deparse(substitute(g)))) +
+    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+    scale_x_continuous(breaks = c(0:length(degree_distribution(g)))
+                                              ) 
+}</code></pre>
+<p>Then you can call the function whenever by doing this:</p>
+<pre class="r"><code>plot.dd(karate)</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.20-1.png" width="672" /></p>
+<p>The <em>neighborhood</em> of a node is the set of nodes that are connected to it. For instance, to see the neighborhood of <code>Mr Hi</code>, we can do:</p>
+<pre class="r"><code>neighbors(karate, &quot;Actor 7&quot;)</code></pre>
+<pre><code>## + 4/34 vertices, named, from 4b458a1:
+## [1] Mr Hi    Actor 5  Actor 6  Actor 17</code></pre>
+<div id="exercise-1.2" class="section level3">
+<h3>Exercise 1.2</h3>
+<ul>
+<li>The general intuition is that those nodes that have a higher degree are more important than those nodes with a lower degree connectivity.</li>
+<li>Refer back to the plot of the degree distribution of the network. There are two clear outliers in terms of degree connectivity. Who are they? Does this make sense?</li>
+<li>Find the neighborhoods of the nodes with the highest degree. Use <code>intersect</code> to find the overlap between these two neighborhoods. What did you find? Does this make sense? What are some questions you may have about this overlap?</li>
+<li>For the <code>karate</code> network, it is easy to pick out those nodes that have a “high” degree connectivity. However, suppose that your degree distribution looked like the graph below. How would you decide a cutoff for a node to have “high” degree connectivity?</li>
+</ul>
+<p><img src="lesson_1_files/figure-html/karate.22-1.png" width="672" /></p>
+</div>
+</div>
+<div id="graph-clustering" class="section level2">
+<h2>Graph clustering</h2>
+<p>Another common technique in network analysis is <em>graph clustering</em>. The aim of <em>graph clustering</em> is to find subsets of nodes within a graph that are related. *<code>iGraph</code> comes with several clustering algorithms. For example, we can use <code>cluster_fast_greedy</code> to cluster the <code>karate</code> network:</p>
+<pre class="r"><code>karate.cfg &lt;- cluster_fast_greedy(karate)
+plot(karate.cfg,
+     karate)</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.23-1.png" width="672" /></p>
+<div id="exercise-1.3" class="section level3">
+<h3>Exercise 1.3</h3>
+<ul>
+<li>How do you interpret the previous plot? Does this make sense given the system of study?</li>
+<li>Try out other clustering algorithms and see if you can get equal or better results as above.</li>
+<li>It’s easy to find an algorithm and apply it to your network to try and find some structure. What are some things you should keep in mind when applying clustering algorithms to a nentwork?</li>
+</ul>
+</div>
+</div>
+
+<p><br>
+<br>
+<strong><a href="https://github.com/pommevilla">Paul Villanueva</a></strong> 
+<br>
+Ph.D. Student - Bioinformatics and Computational Biology<br>
+Iowa State University, Ames, IA.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

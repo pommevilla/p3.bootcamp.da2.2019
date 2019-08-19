@@ -1,0 +1,30 @@
+---
+title: "Introduction"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+## About this workshop
+
+This is an extra, shorter session focusing on an introduction to network analysis with iGraph. We'll start our learning about network analysis by looking at Zachary's Karate Club(). Afterwards, we'll move on to a more complex system and look at the data from the paper [The metabolic background is a global player in *Saccharomyces* gene expression epistasis](https://www.nature.com/articles/nmicrobiol201530) by Alam et. al. 
+
+Run the following lines of code to install the packages necessary for this workshop:
+
+```{r, setup.1, eval = FALSE}
+install.packages("igraph")
+install.packages("igraphdata")
+install.packages("ggplot2")
+install.packages("tidyverse")
+```
+
+
+[p3-landing]: https://www.predictivephenomicsinplants.iastate.edu/
+[intro-to-r]: https://github.com/pommevilla/p3.bootcamp.r.2019
+[intro-to-python]: https://github.com/pommevilla/p3.bootcamp.python.2019
+[paul-github]: https://github.com/pommevilla
+[intro-to-unix]: https://github.com/skDooley/shell_tutorial
+[shane-github]: https://github.com/skDooley
+[data-1]: https://github.com/pommevilla/p3.bootcamp.da1.2019
