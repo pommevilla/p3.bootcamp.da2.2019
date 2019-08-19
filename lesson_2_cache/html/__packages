@@ -1,10 +1,4 @@
 base
-methods
-datasets
-utils
-grDevices
-graphics
-stats
 igraph
 igraphdata
 tidyverse
@@ -16,3 +10,8 @@ purrr
 dplyr
 stringr
 forcats
+MASS
+lattice
+mixOmics
+reshape2
+data.table

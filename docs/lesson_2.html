@@ -7,11 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
-<title>Network analysis of Saccharomyces protein-protein interaction netowrk</title>
+<title>Analysis of Saccharomyces protein-protein interaction netowrk</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -247,48 +248,9 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -337,8 +299,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -400,6 +360,9 @@ div.tocify {
 <li>
   <a href="lesson_2.html">PPI network of Saccharomyces</a>
 </li>
+<li>
+  <a href="next_steps.html">Next steps</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -412,13 +375,142 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Network analysis of Saccharomyces protein-protein interaction netowrk</h1>
+<h1 class="title toc-ignore">Analysis of Saccharomyces protein-protein interaction netowrk</h1>
 
 </div>
 
 
-<div id="determine-which-clusters-to-include" class="section level2">
-<h2>Determine which clusters to include</h2>
+<pre class="r"><code>library(mixOmics)
+library(reshape2)
+source(&quot;src/utils.R&quot;)</code></pre>
+<p><code>src/utils.R</code> contains several functions I wrote to help out today.</p>
+<div id="reading-in-proteomics-data" class="section level2">
+<h2>Reading in proteomics data:</h2>
+<pre class="r"><code>proteomics &lt;- read.delim(&quot;data/proteomics.txt&quot;)</code></pre>
+<p>Getting correlation for the Luecine mutants:</p>
+<pre class="r"><code>leucine.treatment_cols &lt;- 11:13
+
+L1_L3.cor &lt;- get_treatment_cor(proteomics, leucine.treatment_cols)</code></pre>
+<p>Before we plot the network or go any furtherLet’s take a look at the number of interactions that we have found in our network:</p>
+<pre class="r"><code>plot_cor_heatmap(L1_L3.cor, triangle = TRUE)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>That’s nearly 200,000 interactions. We want to filter the number of interactions before we go forward. But how do we filter them?</p>
+<div id="exercise-2.1" class="section level3">
+<h3>Exercise 2.1</h3>
+<ul>
+<li>Suppose you are trying to determine whether or not a coin is fair. You flip the coin 100 times and it comes up heads 73 times. Is this a fair coin? Why or why not? Hint: use <code>dbinom</code>.</li>
+</ul>
+</div>
+</div>
+<div id="choosing-a-cutoff" class="section level2">
+<h2>Choosing a cutoff</h2>
+<p>The idea behind choosing a cutoff is that we want to only consider those interactions that are significant, in the sense that they are highly unlikely to occur under the null hypothesis that there is only a random relationship between the two objects. Thus, we will only consider those interactions above our cutoff (or below our lower threshold).</p>
+<p>But how do we decide what the cutoff is? In the example above, were able to confidently say that the coin was not a fair one because the chance of a fair coin coming up heads 73 out of 100 times is highly unlikely:</p>
+<pre class="r"><code>dbinom(73, 100, 0.5)</code></pre>
+<pre><code>## [1] 1.512525e-06</code></pre>
+<p>Thus, we reject the null hypothesis that the coin is fair and accept the alternate hypothesis that the coin is unfair. However, in this circumstance, we don’t have a known distribution from which we can choose a threshold. What we can do, however, is to simulate this distribution via resampling the original expression data with replacement. If you’re unfamiliar with this idea, the <a href="https://en.wikipedia.org/wiki/Resampling_(statistics)">Wikipedia article</a> is a good place to start, but the main idea is this - in the absence of a known distribution, we can approximate this distribution by resampling from the original data. As we take more and more samples, the distribution of this simulated data (under certain, common conditions) will converge to the true distribution.</p>
+<p>The <code>bootstrap_cor</code> function will reshuffle the original expression data, calculate the resulting correlation values, and record these values into a histogram <code>B = 100</code> times.</p>
+<pre class="r"><code>L1_L3.boots &lt;- bootstrap_cor(proteomics, treats = leucine.treatment_cols, B = 100)</code></pre>
+<p>We can then visualize the distribution of the bootstrapped values, as well as 5% and 95% cutoffs, with the</p>
+<pre class="r"><code>L1_L3.quantiles &lt;- bootstrap_quantiles(L1_L3.boots, 0.10)
+plot_bootstrap(L1_L3.boots, L1_L3.quantiles) + labs(title = &quot;Simulated correlation histogram: Leucine mutant (B = 1000)&quot;, x = &quot;Spearman correlation&quot;)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>From here, we can subset our original data by these thresholds:</p>
+<pre class="r"><code>L1_L3.cor &lt;- threshold_cor_matrix(L1_L3.cor, L1_L3.quantiles)
+plot_cor_heatmap(L1_L3.cor, triangle = TRUE) + 
+  labs(title = &quot;Significant protein-protein interactions in the leucine mutant&quot;)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<div id="exercise-2.2" class="section level3">
+<h3>Exercise 2.2</h3>
+<ul>
+<li>How did the authors of the source paper choose their cutoff ? Why?</li>
+<li>Why did we choose the cutoffs we did?</li>
+</ul>
+</div>
+</div>
+<div id="preparing-the-network" class="section level2">
+<h2>Preparing the network</h2>
+<p>From here, we can make a network. The <code>prepare_network</code> function deletes the vertices that have no edges and calculates the <a href="https://en.wikipedia.org/wiki/Betweenness_centrality">betweeness</a> score of each node.</p>
+<pre class="r"><code>leucine.graph &lt;- graph_from_adjacency_matrix(L1_L3.cor)
+leucine.graph &lt;- prepare_network(leucine.graph)</code></pre>
+<p>We will cluster the graph by <a href="https://en.wikipedia.org/wiki/Girvan%E2%80%93Newman_algorithm">betweenness</a>. Note that this can take a very long time to run:</p>
+<pre class="r"><code>leucine.coms_between &lt;- cluster_edge_betweenness(leucine.graph)
+plot(leucine.coms_between,
+     leucine.graph, 
+     vertex.label = NA,
+     vertex.size = V(leucine.graph)$btwn * 0.001,
+      edge.arrow.size = 0.1)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Here, the nodes are sized by their betweenness score; those nodes with larger circles have a higher betweenness. Let’s take a look at the distribution of betweenness scores:</p>
+<pre class="r"><code>upper_q &lt;- quantile(V(leucine.graph)$btwn, 0.95)
+ggplot() + 
+  aes(V(leucine.graph)$btwn) + 
+  geom_histogram(binwidth = 1000, colour=&quot;black&quot;, fill=&quot;white&quot;) + 
+  labs(x = &quot;Betweeness score&quot;,
+       y = &quot;Count&quot;,
+       title = &quot;Betweeness score distribution for leucine mutant network&quot;) + 
+  geom_vline(xintercept = upper_q, color = &quot;#BB0000&quot;, linetype = &#39;dashed&#39;) + 
+  geom_text(aes(x = upper_q , label = paste0(&quot;95% cutoff:\n&quot;, upper_q), y = 100),
+              colour = &quot;#BB0000&quot;, size = 3, nudge_x = 4900)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Let’s look at those nodes with betweenness in the 95% quantile:</p>
+<pre class="r"><code>(highest_comm_genes &lt;- names(V(leucine.graph)[V(leucine.graph)$btwn &gt; upper_q]))</code></pre>
+<pre><code>##  [1] &quot;YER055C&quot; &quot;YGR094W&quot; &quot;YPL262W&quot; &quot;YML085C&quot; &quot;YDL075W&quot; &quot;YAL005C&quot; &quot;YLR180W&quot;
+##  [8] &quot;YBR196C&quot; &quot;YBR127C&quot; &quot;YCL009C&quot; &quot;YLL026W&quot; &quot;YKL181W&quot; &quot;YBR177C&quot; &quot;YNL160W&quot;
+## [15] &quot;YHR029C&quot; &quot;YGR162W&quot; &quot;YER057C&quot; &quot;YOR335C&quot; &quot;YLR153C&quot; &quot;YNR021W&quot; &quot;YNL141W&quot;
+## [22] &quot;YLR028C&quot; &quot;YDL086W&quot;</code></pre>
+<p>We can then write these names out to a file:</p>
+<pre class="r"><code>write.table(highest_comm_genes, &quot;high_betweenness_genes.txt&quot;, 
+            row.names = FALSE,
+            col.names = FALSE,
+            quote = FALSE)</code></pre>
+<div id="exercise-2.3" class="section level3">
+<h3>Exercise 2.3</h3>
+<ul>
+<li>Why did we choose to cluster the nodes by betweenness? With that in mind, what could be one possible interpretation of the clusters in this graph?</li>
+<li>What are some choices that we made along the way that impacted our final list of significant genes? What could we have done differently?</li>
+<li>We’ve only done the analysis for the leucine mutants. Suppose we repeated this for the histidine mutants and the wild-types (phototrophs). What are some questions you can answer?</li>
+<li>Use the <a href="https://david.ncifcrf.gov">DAVID</a> Functional Annotation Tool to see what functions are represented in the genes with high betweenness. What did you find? How did this relate to the cutoffs we used?</li>
+</ul>
+</div>
+</div>
+<div id="pca-of-proteomics-data" class="section level2">
+<h2>PCA of proteomics data</h2>
+<p>We’ll start with a PCA of the proteomic data. To do so, we will first extract the numeric data from the data frame and rename the columns so that we can investigate the loadings later.</p>
+<pre class="r"><code>proteomics.expression_data &lt;- t(proteomics[8:16])
+colnames(proteomics.expression_data) &lt;- proteomics$UNIQID</code></pre>
+<p>From here, we just call the <code>pca</code> function:</p>
+<pre class="r"><code>pca.proteome &lt;- pca(proteomics.expression_data, ncomp = 6, 
+                    center = TRUE,
+                    scale = TRUE)</code></pre>
+<p>We can then do a few different plots. The first one tells us how much variance is explained by each principal component - that is, how much of the original data can we recover if we just use the first <code>n</code> principal components?</p>
+<pre class="r"><code>plot(pca.proteome,
+       main = &quot;PCA plot for proteomics data&quot;)</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>We can also plot the original data on these principal components:</p>
+<pre class="r"><code>groups&lt;-data.frame(genotypes=c(rep(&quot;Histidine mutant&quot;, 3),
+                               rep(&quot;Leucine mutant&quot;, 3),
+                               rep(&quot;WT&quot;, 3)),
+                   replicates=c(&quot;H1&quot;,&quot;H2&quot;,&quot;H3&quot;,&quot;L1&quot;,&quot;L2&quot;,&quot;L3&quot;,&quot;PROTOTROPH1&quot;,&quot;PROTOTROPH2&quot;,&quot;PROTOTROPH3&quot;)
+                   )
+plotIndiv(pca.proteome, comp = c(1, 2), group = groups$genotypes,
+          ind.names = groups$replicates,
+          legend = TRUE, title = &#39;Proteome, PCA comp 1 - 2&#39;) </code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>We can also look at the <em>loadings</em> of each of the original factors in the PCA. For example:</p>
+<pre class="r"><code>pca.proteome$loadings</code></pre>
+<p>We can also look at a histogram of the weights for each of the principal components using <code>pca_nth_component_histogram</code> from <code>utils.R</code>:</p>
+<pre class="r"><code>pca_nth_component_histogram(pca.proteome, 1)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="lesson_2_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Here the red lines correspond to the upper and lower 5% quantiles.</p>
+</div>
+<div id="exercise-2.3-1" class="section level2">
+<h2>Exercise 2.3</h2>
+<ul>
+<li>What do the loadings tell us about the original variables in relation to the principal components?</li>
+<li>How do they relate to the quantiles in the above graph?</li>
+</ul>
 </div>
 
 <p><br>
@@ -445,6 +537,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

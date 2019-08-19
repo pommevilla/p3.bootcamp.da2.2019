@@ -33,7 +33,8 @@ plot_cor_heatmap <- function(cor_matrix, triangle = TRUE){
     scale_fill_gradient2(low = "red", mid = "black", high = "steelblue", space = "Lab",
                          breaks = c(-1, 0, 1), labels = c(-1, 0, 1),
                          limits = c(-1, 1)) +
-    labs(subtitle = paste0("# Interactions: ", sig_count)) +
+    labs(title = paste0("Correlation heatmap for ", deparse(substitute(cor_matrix))),
+         subtitle = paste0("# Interactions: ", sig_count)) +
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
           panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -164,5 +165,6 @@ plot_dd <- function(g){
   ggplot(g.dd, aes(x = k, y = p_k)) + geom_bar(stat = "identity") +
     labs(x = "Degree (k)", y = "Proportion of nodes of degree k (p(k))", title = "Degree distribution: k vs. p(k)", 
          subtitle = paste("Graph:", deparse(substitute(g)))) +
-    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) + 
+    scale_x_continuous(breaks = c(0:length(degree_distribution(g))))
 }

@@ -11,6 +11,8 @@ navbar:
     href: lesson_1.html
   - text: PPI network of Saccharomyces
     href: lesson_2.html
+  - text: Next steps
+    href: next_steps.html
 
     
 output:

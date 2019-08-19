@@ -1,0 +1,19 @@
+---
+title: "Next steps"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+Below are some resources for you to continue your learning.
+
+* [Network Analysis with R and igraph](https://kateto.net/networks-r-igraph) by [Katherine Ognyanova](https://kateto.net/networks-r-igraph) is a pretty comprehensive tutorial that goes over the igraph package. The rest of her website has a lot of good resources for iGraph.
+* [Using igraph for visualizations](http://users.cecs.anu.edu.au/~xlx/teaching/css2013/handout/igraph.pdf) is a good resource for getting more out of iGraph visualizations...
+* ...though most people use [Cytoscape](https://cytoscape.org/) when they're making plots for publications.
+
+
+## Help
+
+* [Stack Overflow](https://stackoverflow.com/) is usually the first site people check out when they're looking for help with a programming question. Make sure to search the site first before you ask your question - chances are it's already been answered.

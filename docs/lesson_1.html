@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -247,48 +248,9 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -337,8 +299,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -400,6 +360,9 @@ div.tocify {
 <li>
   <a href="lesson_2.html">PPI network of Saccharomyces</a>
 </li>
+<li>
+  <a href="next_steps.html">Next steps</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -427,7 +390,9 @@ library(igraphdata)
 library(tidyverse)
 data(karate)
 
-theme_set(theme_light())</code></pre>
+theme_set(theme_light())
+
+src(&quot;src/utils.R&quot;)</code></pre>
 <p>(Note: you can reproduce Zachary’s Karate network with <code>igraph::make_graph("Zachary")</code>, but it doesn’t have as much metadata as the version that comes with <code>igraphdata</code>)</p>
 <p>Let’s do some basic igraph stuff. Let’s see what an <code>igraph</code> object looks like:</p>
 <pre class="r"><code>karate</code></pre>
@@ -522,9 +487,16 @@ theme_set(theme_light())</code></pre>
 <pre class="r"><code>plot.igraph(karate,
      main = &quot;Zachary&#39;s Karate Network&quot;)</code></pre>
 <p><img src="lesson_1_files/figure-html/karate.11-1.png" width="672" /></p>
+<p>We can have the size of the node reflect its degree:</p>
+<pre class="r"><code>plot(karate,
+     vertex.size = degree(karate) * 1,
+     main = &quot;Zachary&#39;s Karate Club&quot;
+     )</code></pre>
+<p><img src="lesson_1_files/figure-html/karate.13.plot-1.png" width="672" /></p>
 <p>Finally, we can try out other layouts:</p>
 <pre class="r"><code>plot(karate, 
-     layout = layout_as_tree(karate))</code></pre>
+     layout = layout_as_tree(karate),
+     main = &quot;Zachary&#39;s Karate Club&quot;)</code></pre>
 <p><img src="lesson_1_files/figure-html/karate.12-1.png" width="672" /></p>
 <div id="exercise-1.1" class="section level3">
 <h3>Exercise 1.1</h3>
@@ -533,7 +505,7 @@ theme_set(theme_light())</code></pre>
 <li>What do the edges represent? How are they weighted?</li>
 <li>What’s the difference between a directed and an undirected graph? What kind of graph is <code>karate</code>?</li>
 <li>Enter <code>karate[]</code> into your console. What is that?</li>
-<li>Plot <code>karate</code> again usign <code>layout_in_circle</code>.</li>
+<li>Plot <code>karate</code> again using <code>layout_in_circle</code> and scaling the width of each edge by its weight.</li>
 </ul>
 </div>
 </div>
@@ -574,20 +546,8 @@ theme_set(theme_light())</code></pre>
 <p>We can get a quick visualization of this distribution via <code>plot</code>:</p>
 <pre class="r"><code>plot(degree.distribution(karate))</code></pre>
 <p><img src="lesson_1_files/figure-html/karate.18-1.png" width="672" /></p>
-<p>We will use the following function throughout the day to help make the visualizations a little prettier. Run the following code in your environment:</p>
-<pre class="r"><code>plot.dd &lt;- function(g){
-  g.dd &lt;- data.frame(0:(length(degree_distribution(g)) - 1), 
-                     degree_distribution(g, cumulative = FALSE))
-  colnames(g.dd) &lt;- c(&quot;k&quot;, &quot;p_k&quot;)
-  ggplot(g.dd, aes(x = k, y = p_k)) + geom_bar(stat = &quot;identity&quot;) +
-    labs(x = &quot;Degree (k)&quot;, y = &quot;Proportion of nodes of degree k (p(k))&quot;, title = &quot;Degree distribution: k vs. p(k)&quot;, 
-         subtitle = paste(&quot;Graph:&quot;, deparse(substitute(g)))) +
-    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
-    scale_x_continuous(breaks = c(0:length(degree_distribution(g)))
-                                              ) 
-}</code></pre>
-<p>Then you can call the function whenever by doing this:</p>
-<pre class="r"><code>plot.dd(karate)</code></pre>
+<p>We can use <code>plot_dd</code> from the <code>utils</code> file to make it a bit prettier.</p>
+<pre class="r"><code>plot_dd(karate)</code></pre>
 <p><img src="lesson_1_files/figure-html/karate.20-1.png" width="672" /></p>
 <p>The <em>neighborhood</em> of a node is the set of nodes that are connected to it. For instance, to see the neighborhood of <code>Mr Hi</code>, we can do:</p>
 <pre class="r"><code>neighbors(karate, &quot;Actor 7&quot;)</code></pre>
@@ -645,6 +605,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

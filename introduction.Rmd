@@ -17,7 +17,14 @@ Run the following lines of code to install the packages necessary for this works
 install.packages("igraph")
 install.packages("igraphdata")
 install.packages("ggplot2")
+install.packages("reshape2")
 install.packages("tidyverse")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("mixOmics")
+
+library(mixOmics)
 ```
 
 

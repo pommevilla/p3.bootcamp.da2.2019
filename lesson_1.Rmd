@@ -22,6 +22,8 @@ library(tidyverse)
 data(karate)
 
 theme_set(theme_light())
+
+src("src/utils.R")
 ```
 
 (Note: you can reproduce Zachary's Karate network with `igraph::make_graph("Zachary")`, but it doesn't have as much metadata as the version that comes with `igraphdata`)
@@ -107,11 +109,22 @@ plot.igraph(karate,
      main = "Zachary's Karate Network")
 ```
 
+We can have the size of the node reflect its degree:
+
+```{r, karate.13.plot}
+plot(karate,
+     vertex.size = degree(karate) * 1,
+     main = "Zachary's Karate Club"
+     )
+```
+
+
 Finally, we can try out other layouts:
 
 ```{r, karate.12}
 plot(karate, 
-     layout = layout_as_tree(karate))
+     layout = layout_as_tree(karate),
+     main = "Zachary's Karate Club")
 ```
 
 
@@ -121,7 +134,8 @@ plot(karate,
 * What do the edges represent? How are they weighted?
 * What's the difference between a directed and an undirected graph? What kind of graph is `karate`?
 * Enter `karate[]` into your console. What is that?
-* Plot `karate` again using `layout_in_circle`.
+* Plot `karate` again using `layout_in_circle` and scaling the width of each edge by its weight.
+
 
 ## Graph connectivity
 
@@ -163,27 +177,10 @@ We can get a quick visualization of this distribution via `plot`:
 plot(degree.distribution(karate))
 ```
 
-We will use the following function throughout the day to help make the visualizations a little prettier. Run the following code in your environment:
-
-```{r, karate.19}
-plot.dd <- function(g){
-  g.dd <- data.frame(0:(length(degree_distribution(g)) - 1), 
-                     degree_distribution(g, cumulative = FALSE))
-  colnames(g.dd) <- c("k", "p_k")
-  ggplot(g.dd, aes(x = k, y = p_k)) + geom_bar(stat = "identity") +
-    labs(x = "Degree (k)", y = "Proportion of nodes of degree k (p(k))", title = "Degree distribution: k vs. p(k)", 
-         subtitle = paste("Graph:", deparse(substitute(g)))) +
-    theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
-    scale_x_continuous(breaks = c(0:length(degree_distribution(g)))
-                                              ) 
-}
-
-```
-
-Then you can call the function whenever by doing this:
+We can use `plot_dd` from the `utils` file to make it a bit prettier.
 
 ```{r, karate.20}
-plot.dd(karate)
+plot_dd(karate)
 ```
 
 The *neighborhood* of a node is the set of nodes that are connected to it. For instance, to see the neighborhood of `Mr Hi`, we can do:
@@ -201,8 +198,8 @@ neighbors(karate, "Actor 7")
 * For the `karate` network, it is easy to pick out those nodes that have a "high" degree connectivity. However, suppose that your degree distribution looked like the graph below. How would you decide a cutoff for a node to have "high" degree connectivity?
 
 ```{r, karate.22, echo = FALSE}
-sim_graph <- erdos.renyi.game(50, 1/5)
-plot.dd(sim_graph)
+sim_graph <- erdos.renyi.game(70, 1/4)
+plot_dd(sim_graph)
 ```
 
 ## Graph clustering
