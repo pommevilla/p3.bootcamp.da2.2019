@@ -27,6 +27,14 @@ BiocManager::install("mixOmics")
 library(mixOmics)
 ```
 
+Finally, download the workshop materials by entering:
+
+
+```{bash, eval = FALSE}
+git clone https://github.com/pommevilla/p3.bootcamp.da2.2019.git
+```
+
+
 
 [p3-landing]: https://www.predictivephenomicsinplants.iastate.edu/
 [intro-to-r]: https://github.com/pommevilla/p3.bootcamp.r.2019
