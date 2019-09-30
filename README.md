@@ -1,11 +1,19 @@
 # P3 Programming Bootcamp 2019: Data Applications 1
 
-Materials for the programming bootcamp hosted by the [Predictive Plant Phenomics (P3) NRT program][p3-landing] on August 16, 2019. This workshop is a demonstration of 
+Materials for the *Data Applications 1* workshop of the Programming Bootcamp hosted by the [Predictive Plant Phenomics (P3) NRT program][p3-landing] on August 13-19, 2019. The other workshops in this bootcamp are:
 
 * [August 13: *Introduction to R*][intro-to-r] taught by [Paul Villanueva][paul-github]
 * [August 14: *Introduction to Python*][intro-to-python] taught by [Paul Villanueva][paul-github]
 * [August 15: *Introduction to UNIX*][intro-to-unix] taught by [Shane Dooley][shane-github]
 * [August 16: *Data Applications 1*][data-1] taught by [Paul Villanueva][paul-github]
+* [August 19: *Data Applications 2*][data-2] (this page) taught by [Paul Villanueva][paul-github]
+
+## About this workshop
+
+This workshop is an introduction to network analysis in R using the `iGraph` package. There are two parts to this workshop:
+
+* [iGraph basics](https://pommevilla.github.io/p3.bootcamp.da2.2019/lesson_1.html), which demonstrates some basics of using `iGraph` in R
+* [PPI network of Saccharomyces](https://pommevilla.github.io/p3.bootcamp.da2.2019/lesson_2.html), which is a small case study in using network analysis to look at a protein-protein interaction network in *Saccharomyches*.
 
 ## About these workshops
 
@@ -25,7 +33,7 @@ The National Science Foundation Research Traineeship (NRT) is the Foundation's n
 
 ## Contact
 
-Send questions, comments, and feedback to pev at iastate dot edu.
+Send questions, comments, and feedback to pev@iastate.edu.
 
 [p3-landing]: https://www.predictivephenomicsinplants.iastate.edu/
 [intro-to-r]: https://pommevilla.github.io/p3.bootcamp.r.2019/ 
@@ -34,3 +42,4 @@ Send questions, comments, and feedback to pev at iastate dot edu.
 [intro-to-unix]: https://github.com/skDooley/shell_tutorial
 [shane-github]: https://github.com/skDooley
 [data-1]: https://github.com/pommevilla/p3.bootcamp.da1.2019
+[data-2]: https://github.com/pommevilla/p3.bootcamp.da2.2019
